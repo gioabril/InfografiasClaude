@@ -3851,7 +3851,8 @@ function update() {
 
     const { x, w } = sectionVB(idx);
     setVB(x, w);
-    setTimeout(() => revealSec(idx), 320);
+    const target = idx;
+    setTimeout(() => { if (activeSec === target) revealSec(target); }, 320);
     updatePanel(idx, false);
   }
 }
