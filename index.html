@@ -3791,21 +3791,6 @@ function hideSec(idx) {
   secEls[idx].forEach(({ el }) => el.classList.remove('vis'));
 }
 
-/* Reset: called when user returns to start after finishing */
-let hasReachedEnd = false;
-
-function resetAll() {
-  hasReachedEnd = false;
-  revealed.clear();
-  document.querySelectorAll('#main-svg > [data-sec].vis')
-    .forEach(el => el.classList.remove('vis'));
-  activeSec = -1;
-  setTimeout(() => {
-    updatePanel(0, true);
-    revealSec(0);
-  }, 80);
-}
-
 /* Info panel */
 let activeSec = -1;
 
@@ -3837,7 +3822,15 @@ function updatePanel(idx, instant) {
 
 /* Scroll handler */
 let ticking = false;
-let lastIdx  = -1;
+
+function unrevealFrom(fromSec) {
+  for (let s = fromSec; s < N; s++) {
+    if (revealed.has(s)) {
+      revealed.delete(s);
+      secEls[s].forEach(({ el }) => el.classList.remove('vis'));
+    }
+  }
+}
 
 function update() {
   ticking = false;
@@ -3849,23 +3842,18 @@ function update() {
 
   const idx = Math.min(N - 1, Math.floor(prog * N));
 
-  /* Reset if user returns to start after finishing */
-  if (idx === 0 && hasReachedEnd && lastIdx > 0) {
-    resetAll();
-    lastIdx = 0;
-    return;
-  }
-
-  if (idx === N - 1) hasReachedEnd = true;
-
   if (idx !== activeSec) {
+    if (activeSec > idx) {
+      /* Going backward: unreveal every section we're leaving behind
+         so they replay when the user advances through them again */
+      unrevealFrom(idx + 1);
+    }
+
     const { x, w } = sectionVB(idx);
     setVB(x, w);
     setTimeout(() => revealSec(idx), 320);
     updatePanel(idx, false);
   }
-
-  lastIdx = idx;
 }
 
 sc.addEventListener('scroll', () => {
