@@ -11,126 +11,250 @@
       --accent:  #ff6b2b;
       --accent2: #ffa034;
       --bg:      #0b1622;
+      --outer:   #060e18;
       --text:    #e8f4f8;
       --muted:   rgba(232,244,248,0.55);
       --N: 8;
-      --dwell: 150vh;
     }
 
-    html, body { width:100%; height:100%; overflow:hidden;
-      background:var(--bg); font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
-      color:var(--text); }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: var(--outer);
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      color: var(--text);
+    }
 
-    /* ── Scroll container ── */
-    #sc { width:100%; height:100%; overflow-y:scroll; overflow-x:hidden;
-          -webkit-overflow-scrolling:touch; }
+    /* ── Frame: creates visual isolation from parent site ── */
+    #frame {
+      width: calc(100% - 20px);
+      height: calc(100% - 20px);
+      margin: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 107, 43, 0.18);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04),
+                  inset 0 0 30px rgba(0,0,0,0.3);
+      position: relative;
+    }
 
-    /* ── Scroll driver: creates scroll space ── */
-    #driver { height:calc(var(--N) * var(--dwell)); position:relative; }
+    /* ── Horizontal scroll container ── */
+    #sc {
+      width: 100%;
+      height: 100%;
+      overflow-x: scroll;
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+      /* Force scrollbar always visible + style it */
+      scrollbar-color: var(--accent) rgba(255,255,255,0.05);
+    }
 
-    /* ── Sticky stage ── */
-    #stage { position:sticky; top:0; height:100svh; min-height:420px;
-             display:flex; flex-direction:column; overflow:hidden; }
+    /* ── Scrollbar always visible, styled ── */
+    #sc::-webkit-scrollbar {
+      height: 14px;
+      background: rgba(11,22,34,0.9);
+    }
+    #sc::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.04);
+      border-radius: 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    #sc::-webkit-scrollbar-thumb {
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
+      border-radius: 7px;
+      border: 3px solid #0b1622;
+      box-shadow: 0 0 10px rgba(255,107,43,0.55);
+      min-width: 48px;
+    }
+    #sc::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      box-shadow: 0 0 16px rgba(255,107,43,0.85);
+    }
+
+    /* ── Scroll driver: creates horizontal scroll space ── */
+    #driver {
+      /* width set by JS: N × viewport width */
+      height: 100%;
+      position: relative;
+    }
+
+    /* ── Sticky stage: fills viewport, stays pinned left ── */
+    #stage {
+      position: sticky;
+      left: 0;
+      /* width set by JS = sc.clientWidth */
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
 
     /* ── Progress bar ── */
-    #prog-track { height:3px; background:rgba(255,255,255,0.08); flex-shrink:0; }
-    #prog-bar   { height:100%; width:0; background:var(--accent);
-                  transition:width 0.1s linear; }
+    #prog-track {
+      height: 3px;
+      background: rgba(255,255,255,0.07);
+      flex-shrink: 0;
+      position: relative;
+    }
+    #prog-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.12s linear;
+    }
 
-    /* ── SVG wrapper ── */
+    /* ── SVG area ── */
     #svg-wrap {
-      flex:1 1 0;
-      min-height:0;
-      position:relative;
-      overflow:hidden;
-      background:var(--bg);
-      display:flex; align-items:center; justify-content:center;
+      flex: 1 1 0;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     #main-svg {
-      width:100%;
-      height:100%;
-      display:block;
-      /* viewBox panned by JS – preserve aspect with meet */
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
     /* ── SVG element animations ── */
-    /* All tagged direct children start hidden */
     #main-svg > [data-sec] {
-      opacity:0;
-      transition: opacity 0.75s cubic-bezier(0.23,1,0.32,1);
+      opacity: 0;
+      transition: opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1);
     }
     #main-svg > [data-sec].vis {
-      opacity:1;
+      opacity: 1;
     }
 
     /* ── Info panel ── */
     #info {
-      flex-shrink:0;
-      padding:10px 24px 12px;
-      background:rgba(11,22,34,0.92);
-      border-top:1px solid rgba(255,255,255,0.07);
-      display:grid;
-      grid-template-columns:1fr auto;
-      gap:6px 16px;
-      align-items:start;
+      flex-shrink: 0;
+      padding: 10px 16px 12px;
+      background: rgba(8,18,28,0.95);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 4px 14px;
+      align-items: center;
     }
-    #info-text { min-width:0; }
-    .sec-date  { font-size:.72rem; font-weight:700; letter-spacing:.12em;
-                 text-transform:uppercase; color:var(--accent); display:block; }
-    .sec-title { font-size:1.1rem; font-weight:700; line-height:1.2; margin:.18em 0 .3em; }
-    .sec-sub   { font-size:.8rem; color:var(--muted); line-height:1.4; margin-bottom:.4em; }
-    .sec-bullets { list-style:none; font-size:.78rem; color:var(--muted); }
+
+    #info-text { min-width: 0; }
+    #info-text.exit { opacity: 0; transform: translateY(5px); }
+    #info-text { transition: opacity .25s ease, transform .25s ease; }
+
+    .sec-date  { font-size: .68rem; font-weight: 700; letter-spacing: .12em;
+                 text-transform: uppercase; color: var(--accent); display: block; }
+    .sec-title { font-size: 1.05rem; font-weight: 700; line-height: 1.2; margin: .15em 0 .25em; }
+    .sec-sub   { font-size: .78rem; color: var(--muted); line-height: 1.4; margin-bottom: .35em; }
+    .sec-bullets { list-style: none; font-size: .74rem; color: var(--muted); }
     .sec-bullets li {
-      opacity:0; transform:translateX(-8px);
-      transition:opacity .4s ease, transform .4s ease;
-      padding-left:1em; position:relative;
+      opacity: 0; transform: translateX(-6px);
+      transition: opacity .35s ease, transform .35s ease;
+      padding-left: .9em; position: relative;
     }
-    .sec-bullets li::before { content:'›'; position:absolute; left:0;
-                               color:var(--accent2); }
-    .sec-bullets li.show { opacity:1; transform:none; }
+    .sec-bullets li::before { content: '›'; position: absolute; left: 0; color: var(--accent2); }
+    .sec-bullets li.show { opacity: 1; transform: none; }
 
-    #info-right { display:flex; flex-direction:column; align-items:center; gap:6px; }
-    .counter-num { font-size:.75rem; color:var(--muted); white-space:nowrap; }
-    .dots { display:flex; flex-direction:column; gap:4px; }
-    .dot  { width:7px; height:7px; border-radius:50%;
-            background:rgba(255,255,255,0.2); cursor:pointer;
-            transition:background .3s ease; }
-    .dot.on { background:var(--accent); }
+    /* ── Navigation: dots + prev/next buttons ── */
+    #nav {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
 
-    /* ── Info panel transition ── */
-    #info-text { transition:opacity .28s ease, transform .28s ease; }
-    #info-text.exit { opacity:0; transform:translateY(6px); }
+    .nav-btn {
+      background: rgba(255,107,43,0.15);
+      border: 1px solid rgba(255,107,43,0.35);
+      color: var(--accent);
+      border-radius: 50%;
+      width: 34px; height: 34px;
+      font-size: 1.1rem; line-height: 1;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, box-shadow .2s, transform .15s;
+      flex-shrink: 0;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: rgba(255,107,43,0.3);
+      box-shadow: 0 0 10px rgba(255,107,43,0.4);
+    }
+    .nav-btn:active:not(:disabled) { transform: scale(.93); }
+    .nav-btn:disabled { opacity: .3; cursor: default; }
+
+    .dots {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: center;
+    }
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      transition: background .3s, transform .3s;
+      flex-shrink: 0;
+    }
+    .dot.on {
+      background: var(--accent);
+      transform: scale(1.35);
+    }
+
+    #ctr-num {
+      font-size: .65rem;
+      color: var(--muted);
+      white-space: nowrap;
+      text-align: center;
+      display: block;
+    }
 
     /* ── Scroll hint ── */
-    #hint { position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
-            font-size:.7rem; color:var(--muted); letter-spacing:.1em;
-            text-transform:uppercase; display:flex; flex-direction:column;
-            align-items:center; gap:4px; pointer-events:none;
-            transition:opacity .5s ease; }
-    #hint .arr { animation:bounce 1.4s ease-in-out infinite; }
-    @keyframes bounce {
-      0%,100%{transform:translateY(0)}
-      50%{transform:translateY(5px)}
+    #hint {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: .65rem;
+      color: var(--muted);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 4px;
+      pointer-events: none;
+      transition: opacity .5s ease;
     }
-    #hint.gone { opacity:0; }
+    #hint .arr { animation: bounce 1.3s ease-in-out infinite; }
+    @keyframes bounce {
+      0%,100% { transform: translateX(0); }
+      50%      { transform: translateX(6px); }
+    }
+    #hint.gone { opacity: 0; }
 
     /* ── Mobile ── */
-    @media(max-width:540px){
-      #info { padding:8px 12px 10px; gap:4px 10px; }
-      .sec-title { font-size:.95rem; }
-      .sec-sub, .sec-bullets { font-size:.72rem; }
-      .dots { flex-direction:row; }
+    @media (max-width: 540px) {
+      #frame { margin: 6px; width: calc(100% - 12px); height: calc(100% - 12px); }
+      #info { padding: 7px 10px 9px; gap: 3px 10px; }
+      .sec-title { font-size: .9rem; }
+      .nav-btn { width: 28px; height: 28px; font-size: 1rem; }
+      .dots { flex-direction: row; gap: 4px; }
+      .dot { width: 5px; height: 5px; }
     }
   </style>
 </head>
 <body>
-<div id="sc">
-  <div id="driver">
-    <div id="stage">
-      <div id="prog-track"><div id="prog-bar"></div></div>
+<div id="frame">
+  <div id="sc">
+    <div id="driver">
+      <div id="stage">
 
-      <div id="svg-wrap">
+        <div id="prog-track"><div id="prog-bar"></div></div>
+
+        <div id="svg-wrap">
 <svg xmlns="http://www.w3.org/2000/svg" id="main-svg" data-name="Capa 1" viewBox="0 0 3712 736" preserveAspectRatio="xMidYMid meet">
   <defs>
     <style>
@@ -3508,61 +3632,63 @@
     </g>
   </g>
 </svg>
-        <div id="hint">
-          <span>Scroll</span>
-          <span class="arr">↓</span>
+          <div id="hint">
+            <span>Scroll</span>
+            <span class="arr">→</span>
+          </div>
         </div>
-      </div><!-- /svg-wrap -->
 
-      <div id="info">
-        <div id="info-text">
-          <span class="sec-date"  id="inf-date"></span>
-          <h2  class="sec-title" id="inf-title"></h2>
-          <p   class="sec-sub"   id="inf-sub"></p>
-          <ul  class="sec-bullets" id="inf-bullets"></ul>
+        <div id="info">
+          <div id="info-text">
+            <span class="sec-date"  id="inf-date"></span>
+            <h2  class="sec-title" id="inf-title"></h2>
+            <p   class="sec-sub"   id="inf-sub"></p>
+            <ul  class="sec-bullets" id="inf-bullets"></ul>
+          </div>
+          <div id="nav">
+            <button class="nav-btn" id="btn-prev" aria-label="Sección anterior">‹</button>
+            <div class="dots" id="dots-wrap"></div>
+            <button class="nav-btn" id="btn-next" aria-label="Siguiente sección">›</button>
+            <span id="ctr-num"></span>
+          </div>
         </div>
-        <div id="info-right">
-          <span class="counter-num" id="ctr-num"></span>
-          <div  class="dots" id="dots"></div>
-        </div>
-      </div>
 
-    </div><!-- /stage -->
-  </div><!-- /driver -->
-</div><!-- /sc -->
+      </div><!-- /stage -->
+    </div><!-- /driver -->
+  </div><!-- /sc -->
+</div><!-- /frame -->
 
 <script>
-/* ── Section metadata ── */
 const SECS = [
-  { date:'Desde el inicio',  title:'Nuestra Historia',
+  { date:'Desde el inicio', title:'Nuestra Historia',
     sub:'El punto de partida de un largo camino hacia la sostenibilidad.',
     bullets:['Visión fundacional del programa','Compromisos iniciales con la sostenibilidad'],
     xS:0, xE:700 },
-  { date:'2013 / 2014',  title:'Nace el Programa',
+  { date:'2013 / 2014', title:'Nace el Programa',
     sub:'Se sientan las bases institucionales y técnicas del proyecto.',
     bullets:['Primeros estudios de factibilidad','Alianzas estratégicas formadas','Marco regulatorio definido'],
     xS:700, xE:1082 },
-  { date:'2013 / 2014',  title:'Estudios de Prefactibilidad',
+  { date:'2013 / 2014', title:'Estudios de Prefactibilidad',
     sub:'Análisis técnicos y económicos que validan la viabilidad del proyecto.',
     bullets:['Análisis de viabilidad técnica','Evaluación económica y financiera','Identificación de socios clave'],
     xS:1082, xE:1430 },
-  { date:'2018',  title:'Nuevos Proyectos',
+  { date:'2018', title:'Nuevos Proyectos',
     sub:'Expansión del programa con nuevas iniciativas y aliados estratégicos.',
     bullets:['Incorporación de nuevos actores','Ampliación del alcance geográfico','Actualización del marco estratégico'],
     xS:1430, xE:1695 },
-  { date:'2019',  title:'UNIDO se Vincula',
+  { date:'2019', title:'UNIDO se Vincula',
     sub:'La organización internacional fortalece el alcance global del programa.',
     bullets:['Cooperación técnica internacional','Acceso a financiamiento global','Adopción de estándares internacionales'],
     xS:1695, xE:1960 },
-  { date:'2019–2024',  title:'Fase 2 · Escalamiento',
+  { date:'2019–2024', title:'Fase 2 · Escalamiento',
     sub:'El programa entra en fase de escalamiento con resultados concretos.',
     bullets:['Implementación a escala industrial','Medición sistemática de impacto','Replicabilidad del modelo'],
     xS:1960, xE:2410 },
-  { date:'2021–2023',  title:'Liderazgo Internacional',
+  { date:'2021–2023', title:'Liderazgo Internacional',
     sub:'El programa se posiciona como referente a nivel mundial.',
     bullets:['Reconocimientos internacionales','Publicaciones y casos de estudio','Red global de aliados'],
     xS:2410, xE:2900 },
-  { date:'2025',  title:'Inicio del GEDP Global',
+  { date:'2025', title:'Inicio del GEDP Global',
     sub:'Lanzamiento de la fase global con alcance en nuevos mercados.',
     bullets:['Expansión a nuevos mercados','Modelo escalable y replicable','Impacto a escala global'],
     xS:2900, xE:3712 }
@@ -3571,31 +3697,40 @@ const SECS = [
 const N = SECS.length;
 const SVG_W = 3712, SVG_H = 736;
 
-/* ── DOM refs ── */
-const sc      = document.getElementById('sc');
-const driver  = document.getElementById('driver');
-const svg     = document.getElementById('main-svg');
-const progBar = document.getElementById('prog-bar');
-const infDate = document.getElementById('inf-date');
-const infTitle= document.getElementById('inf-title');
-const infSub  = document.getElementById('inf-sub');
-const infBul  = document.getElementById('inf-bullets');
-const infoTxt = document.getElementById('info-text');
-const ctrNum  = document.getElementById('ctr-num');
-const dotsEl  = document.getElementById('dots');
-const hint    = document.getElementById('hint');
+/* DOM refs */
+const sc       = document.getElementById('sc');
+const driver   = document.getElementById('driver');
+const stage    = document.getElementById('stage');
+const svg      = document.getElementById('main-svg');
+const progBar  = document.getElementById('prog-bar');
+const infDate  = document.getElementById('inf-date');
+const infTitle = document.getElementById('inf-title');
+const infSub   = document.getElementById('inf-sub');
+const infBul   = document.getElementById('inf-bullets');
+const infoTxt  = document.getElementById('info-text');
+const ctrNum   = document.getElementById('ctr-num');
+const dotsWrap = document.getElementById('dots-wrap');
+const btnPrev  = document.getElementById('btn-prev');
+const btnNext  = document.getElementById('btn-next');
+const hint     = document.getElementById('hint');
 
-/* ── Build dots ── */
-const dots = SECS.map((_, i) => {
+/* Build dots */
+const dots = SECS.map((s, i) => {
   const d = document.createElement('div');
   d.className = 'dot';
-  d.title = SECS[i].title;
-  d.addEventListener('click', () => jumpTo(i));
-  dotsEl.appendChild(d);
+  d.title = s.title;
+  dotsWrap.appendChild(d);
   return d;
 });
 
-/* ── ViewBox state (lerp) ── */
+/* Layout: size driver and stage to fill viewport */
+function initLayout() {
+  const cW = sc.clientWidth;
+  driver.style.width = (N * cW) + 'px';
+  stage.style.width  = cW + 'px';
+}
+
+/* ViewBox lerp */
 let vbX = 0, vbW = SVG_W;
 let tvbX = 0, tvbW = SVG_W;
 let vbRaf = null;
@@ -3604,12 +3739,11 @@ function lerp(a, b, t) { return a + (b - a) * t; }
 
 function tickVB() {
   vbRaf = null;
-  const t = 0.09;
-  vbX = lerp(vbX, tvbX, t);
-  vbW = lerp(vbW, tvbW, t);
+  vbX = lerp(vbX, tvbX, 0.09);
+  vbW = lerp(vbW, tvbW, 0.09);
   svg.setAttribute('viewBox', vbX.toFixed(1) + ' 0 ' + vbW.toFixed(1) + ' ' + SVG_H);
-  const dx = Math.abs(vbX - tvbX), dw = Math.abs(vbW - tvbW);
-  if (dx > 0.3 || dw > 0.3) vbRaf = requestAnimationFrame(tickVB);
+  if (Math.abs(vbX - tvbX) > 0.3 || Math.abs(vbW - tvbW) > 0.3)
+    vbRaf = requestAnimationFrame(tickVB);
 }
 
 function setVB(x, w) {
@@ -3617,22 +3751,20 @@ function setVB(x, w) {
   if (!vbRaf) vbRaf = requestAnimationFrame(tickVB);
 }
 
-/* Calculate best viewBox for a section (fills container height) */
 function sectionVB(idx) {
-  const s = SECS[idx];
-  const cH = svg.parentElement.offsetHeight || 400;
-  const cW = svg.parentElement.offsetWidth  || 800;
-  // Width of SVG to fill the container height with meet
-  const fillW = cW * SVG_H / cH;
-  const sW    = s.xE - s.xS;
-  const w     = Math.max(fillW, sW * 1.5, 600);
-  const cx    = (s.xS + s.xE) / 2;
-  const x     = Math.max(0, Math.min(SVG_W - w, cx - w / 2));
+  const s   = SECS[idx];
+  const cH  = stage.offsetHeight - 60; /* subtract info panel height */
+  const cW  = sc.clientWidth || 800;
+  const fillW = cH > 0 ? cW * SVG_H / cH : SVG_W;
+  const sW  = s.xE - s.xS;
+  const w   = Math.max(fillW, sW * 1.6, 600);
+  const cx  = (s.xS + s.xE) / 2;
+  const x   = Math.max(0, Math.min(SVG_W - w, cx - w / 2));
   return { x, w };
 }
 
-/* ── Per-section element lists (built on load) ── */
-const secEls  = Array.from({length: N}, () => []);
+/* Element lists per section */
+const secEls  = Array.from({ length: N }, () => []);
 const revealed = new Set();
 
 function buildElementLists() {
@@ -3640,7 +3772,7 @@ function buildElementLists() {
     const s = parseInt(el.dataset.sec, 10);
     if (s >= 0 && s < N) {
       let bx = 0;
-      try { bx = el.getBBox().x; } catch(e) {}
+      try { bx = el.getBBox().x; } catch (e) {}
       secEls[s].push({ el, bx });
     }
   });
@@ -3651,11 +3783,30 @@ function revealSec(idx) {
   if (revealed.has(idx)) return;
   revealed.add(idx);
   secEls[idx].forEach(({ el }, i) => {
-    setTimeout(() => el.classList.add('vis'), 80 + i * 90);
+    setTimeout(() => el.classList.add('vis'), 60 + i * 80);
   });
 }
 
-/* ── Info panel ── */
+function hideSec(idx) {
+  secEls[idx].forEach(({ el }) => el.classList.remove('vis'));
+}
+
+/* Reset: called when user returns to start after finishing */
+let hasReachedEnd = false;
+
+function resetAll() {
+  hasReachedEnd = false;
+  revealed.clear();
+  document.querySelectorAll('#main-svg > [data-sec].vis')
+    .forEach(el => el.classList.remove('vis'));
+  activeSec = -1;
+  setTimeout(() => {
+    updatePanel(0, true);
+    revealSec(0);
+  }, 80);
+}
+
+/* Info panel */
 let activeSec = -1;
 
 function updatePanel(idx, instant) {
@@ -3664,6 +3815,7 @@ function updatePanel(idx, instant) {
   const s = SECS[idx];
 
   infoTxt.classList.add('exit');
+  const delay = instant ? 0 : 220;
   setTimeout(() => {
     infDate.textContent  = s.date;
     infTitle.textContent = s.title;
@@ -3672,64 +3824,86 @@ function updatePanel(idx, instant) {
     infoTxt.classList.remove('exit');
     setTimeout(() => {
       infBul.querySelectorAll('li').forEach((li, i) =>
-        setTimeout(() => li.classList.add('show'), 60 + i * 70));
-    }, 50);
-  }, instant ? 0 : 240);
+        setTimeout(() => li.classList.add('show'), 50 + i * 65));
+    }, 40);
+  }, delay);
 
   dots.forEach((d, i) => d.classList.toggle('on', i === idx));
   ctrNum.textContent = (idx + 1) + ' / ' + N;
+  btnPrev.disabled = idx === 0;
+  btnNext.disabled = idx === N - 1;
   hint.classList.add('gone');
 }
 
-/* ── Scroll → section ── */
+/* Scroll handler */
 let ticking = false;
+let lastIdx  = -1;
 
 function update() {
   ticking = false;
-  const maxScroll = driver.offsetHeight - sc.clientHeight;
-  const prog = maxScroll > 0 ? Math.min(1, sc.scrollTop / maxScroll) : 0;
+  const maxScroll = driver.offsetWidth - sc.clientWidth;
+  if (maxScroll <= 0) return;
+
+  const prog = Math.min(1, sc.scrollLeft / maxScroll);
   progBar.style.width = (prog * 100) + '%';
 
   const idx = Math.min(N - 1, Math.floor(prog * N));
+
+  /* Reset if user returns to start after finishing */
+  if (idx === 0 && hasReachedEnd && lastIdx > 0) {
+    resetAll();
+    lastIdx = 0;
+    return;
+  }
+
+  if (idx === N - 1) hasReachedEnd = true;
+
   if (idx !== activeSec) {
     const { x, w } = sectionVB(idx);
     setVB(x, w);
-    // Reveal with slight delay after pan starts
-    setTimeout(() => revealSec(idx), 350);
+    setTimeout(() => revealSec(idx), 320);
     updatePanel(idx, false);
   }
+
+  lastIdx = idx;
 }
 
 sc.addEventListener('scroll', () => {
   if (!ticking) { requestAnimationFrame(update); ticking = true; }
 }, { passive: true });
 
-/* ── Jump to section ── */
+/* Prev / Next buttons */
 function jumpTo(idx) {
-  const maxScroll = driver.offsetHeight - sc.clientHeight;
-  const target = ((idx + 0.05) / N) * maxScroll;
-  sc.scrollTo({ top: target, behavior: 'smooth' });
+  const sectionW = driver.offsetWidth / N;
+  sc.scrollTo({ left: idx * sectionW + 4, behavior: 'smooth' });
 }
 
-/* ── Init ── */
+btnPrev.addEventListener('click', () => { if (activeSec > 0)     jumpTo(activeSec - 1); });
+btnNext.addEventListener('click', () => { if (activeSec < N - 1) jumpTo(activeSec + 1); });
+
+/* Resize */
+window.addEventListener('resize', () => {
+  initLayout();
+  if (activeSec >= 0) {
+    const sectionW = driver.offsetWidth / N;
+    sc.scrollLeft = activeSec * sectionW + 4;
+    const { x, w } = sectionVB(activeSec);
+    vbX = x; vbW = w; tvbX = x; tvbW = w;
+    svg.setAttribute('viewBox', x + ' 0 ' + w + ' ' + SVG_H);
+  }
+});
+
+/* Init */
 window.addEventListener('load', () => {
+  initLayout();
   buildElementLists();
 
-  // Show section 0 immediately
   const { x, w } = sectionVB(0);
   vbX = x; vbW = w; tvbX = x; tvbW = w;
   svg.setAttribute('viewBox', x + ' 0 ' + w + ' ' + SVG_H);
 
   updatePanel(0, true);
-  setTimeout(() => revealSec(0), 200);
-});
-
-// Recalculate viewBox on resize
-window.addEventListener('resize', () => {
-  if (activeSec >= 0) {
-    const { x, w } = sectionVB(activeSec);
-    setVB(x, w);
-  }
+  setTimeout(() => revealSec(0), 150);
 });
 </script>
 </body>
